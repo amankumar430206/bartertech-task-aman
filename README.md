@@ -73,26 +73,39 @@ pnpm dev
 - Error handling & clean component structure
 - No external UI libraries — pure Tailwind + custom primitives
 
-#### Decision,Reason / Benefit
+## Architecture & Design Decisions
 
-"Next.js App Router + ""use client""","Modern routing, server components where possible, streaming support"
-TanStack Query for infinite scrolling,"Handles pagination, caching, background refetch, optimistic updates out-of-box"
-Custom UI components (no shadcn/ui),"Demonstrate pure Tailwind + React skills, no extra dependencies"
-Client-side filtering & aggregation,MockAPI has very limited server-side filtering → consistent UX + fast feedback
-useDebounce hook,"Prevents excessive API calls during typing, improves performance & UX"
-QueryProvider wrapper,"Prevents ""non-serializable"" error when passing QueryClient to client boundary"
-Memoized aggregations,Avoids recalculating totals on every render → better performance with many items
-IntersectionObserver for infinite load,More performant & precise than scroll event listeners
+| Decision                                               | Reasoning / Benefit                                                                                                  |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| Next.js 14 App Router + Server/Client boundaries       | Modern file-system routing, built-in streaming, automatic code-splitting, improved DX with `"use client"` directives |
+| TanStack Query v5 (React Query) for data fetching      | Excellent handling of pagination, infinite scrolling, caching, background updates, error states and retries          |
+| Custom UI components (no external component library)   | Demonstrates deep understanding of Tailwind + React composition, zero extra bundle size, full styling control        |
+| Client-side filtering & aggregation                    | MockAPI has very limited query/filter capabilities → client-side gives consistent & fast UX                          |
+| `useDebounce` custom hook for search input             | Prevents unnecessary re-renders and API calls during rapid typing, improves performance & perceived speed            |
+| IntersectionObserver + ref for infinite scroll trigger | More performant and battery-friendly than scroll event listeners, precise ~70% visibility threshold                  |
+| Memoization (`useMemo`) for aggregations               | Avoids expensive recalculations on every render when new pages are appended                                          |
+| Dedicated `QueryProvider` client component             | Prevents non-serializable object errors when passing `QueryClient` instance across server → client boundary          |
+| Separation of concerns                                 | Clear layers: `api/`, `hooks/`, `utils/`, `components/ui/`, `components/*` domains – easy to maintain & test         |
+| TypeScript strict mode + path aliases (`@/*`)          | Catches errors early, improves refactoring safety and IDE autocompletion                                             |
 
-#### Feature / Choice,Trade-off / Downside,Accepted Because
+## Trade-offs Considered
 
-Client-side filtering instead of API,"More data transferred, slower for huge datasets","MockAPI limitations, small page size (15 items)"
-No server-side search/filter reset,"Full page reload not needed, better perceived performance",SPA feel is prioritized
-No real date-range picker,Less precise date filtering,Keeps dependencies minimal
-No error retry button / toast system,Basic error display only,Focus on core requirements
-MockAPI → no total count,Infinite scroll stops when page returns < limit items,Good enough for demo purposes
-No authentication / protected routes,Public dashboard,Assignment scope
+| Aspect / Choice                                           | Advantage                                               | Downside / Trade-off                                                  | Why Accepted                                       |
+| --------------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------- |
+| Client-side filtering & search                            | Instant feedback, no complex backend query logic needed | Transfers more data than necessary, slower for very large result sets | MockAPI limitations + small page size (15 items)   |
+| No server-side total count / hasMore flag                 | Simple implementation, works with any paginated API     | Infinite scroll stops only when last page returns < limit items       | Good enough for demo / mock environment            |
+| No external date-range picker (yet)                       | Zero extra dependencies, keeps bundle small             | Less convenient / precise date filtering                              | Assignment minimalism & focus on core requirements |
+| Basic error UI (no retry button / toast)                  | Quick to implement, keeps code surface small            | Less polished recovery experience                                     | Prioritized working core features                  |
+| No sorting / advanced filtering (category dropdown, etc.) | Reduced scope & complexity                              | Missing common dashboard features                                     | Time-boxed interview task                          |
+| No authentication / protected routes                      | Straightforward public demo                             | No security / user context                                            | Out of scope for this assignment                   |
+| No unit / integration tests                               | Faster delivery, focus on functionality                 | Harder to refactor confidently later                                  | Typical for take-home UI-focused assignments       |
+| MockAPI-specific stopping condition                       | Works without needing total count metadata              | Not future-proof for real APIs with proper pagination metadata        | Fits the given API constraints perfectly           |
 
-```
+These decisions aim to balance:
 
-```
+- clean & maintainable code structure
+- good performance characteristics
+- demonstration of modern frontend best practices
+- adherence to the assignment constraints (MockAPI, no external UI libs)
+
+while keeping the implementation realistic for a time-constrained interview task.
