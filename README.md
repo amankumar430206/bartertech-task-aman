@@ -28,7 +28,7 @@ It consumes a paginated mock API, implements infinite scrolling, client-side fil
 | State         | React hooks + TanStack Query         |
 | UI Components | Custom (no external UI library)      |
 
-## Project Structure (Clean Architecture-ish)
+## Project Structure (Clean Architecture)
 
 ## Setup Instructions
 
